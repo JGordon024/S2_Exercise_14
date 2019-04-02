@@ -26,38 +26,90 @@
 
 
 */
-// Generate an outline based on h1 through h6 headings in the source document
 window.addEventListener("load", makeOutline);
 
 function makeOutline() {
-      //location of the document outline
+      // location of the document outline
       var outline = document.getElementById("outline");
-      //source document for the outline
+      //Source document for outline
       var source = document.getElementById("doc");
+      //Creating new elements via java
+      var mainHeading = document.createElement("h1")
 
-      var mainHeading = document.createElement("h1");
-      var outlineList = document.createElement("ol")
+      var outlineList = document.createElement("ol");
+
       var headingText = document.createTextNode("Outline");
 
+
+      //Append the text node to page element//Append the text node to page element
       mainHeading.appendChild(headingText);
+
       outline.appendChild(mainHeading);
+
       outline.appendChild(outlineList);
 
       createList(source, outlineList);
 }
 
-function createList(source, outlineList) {
-      //Heading for the outline
-      var headings = ["H1", "H2", "H3", "H4", "H5", "H6"];
 
-      //loop through all the child nodes of source article until no child nodes are left
+function createList(source, outlineList) {
+      //headins 4 ouline
+      var headings = ["H1", "H2", "H3", "H4", "H5", "H6"];
+      // previouse levels of headinf
+      var prevLevel = 0;
+      // running total of the article headings
+      var headNum = 0;
+      //loop through all child nodes
       for (var n = source.firstChild; n !== null; n = n.nextSibling) {
-            //examine only article headings 
+            //examine only artical headings
             var headLevel = headings.indexOf(n.nodeName);
+
             if (headLevel !== -1) {
+
+                  headNum++;
+
+                  if (n.hasAttribute("id") === false) {
+                        n.setAttribute("id", "head" + headNum);
+                  }
                   var listElem = document.createElement("li");
-                  listElem.innerHTML = n.firstChild.nodeValue;
-                  outlineList.appendChild(listElem);
+                  //create hypertext links to the document headings
+                  var linkElem = document.createElement("a")
+                  linkElem.setAttribute("href", "#" + n.id);
+
+                  linkElem.innerHTML = n.innerHTML
+                  //apend the hypertext link to the list item
+                  listElem.appendChild(linkElem)
+
+                  linkElem.innerHTML = n.innerHTML;
+
+
+                  if (headLevel === prevLevel) {
+                        //append the list tiem to the current value
+                        outlineList.appendChild(listElem);
+
+                  } else if (headLevel > prevLevel) {
+                        //start a new the list item to the currnet list' 
+                        var nestedList = document.createElement("ol");
+
+                        nestedList.appendChild(listElem);
+
+                        outlineList.lastChild.appendChild(nestedList);
+
+                        outlineList = nestedList;
+
+                  } else {
+                        //append the list item to a higher list 
+                        var levelUp = prevLevel - headLevel;
+
+                        for (let i = 1; i <= levelUp; i++) {
+                              outlineList = outlineList.parentNode.parentNode;
+                        }
+
+                        outlineList.appendChild(listElem)
+
+                  }
+                  // update value of prevLevel
+                  prevLevel = headLevel
             }
-      }
+      };
 }
